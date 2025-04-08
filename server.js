@@ -1,68 +1,93 @@
+/********************************************************************************
+*  WEB322 – Assignment 03
+* 
+*  I declare that this assignment is my own work in accordance with Seneca's
+*  Academic Integrity Policy:
+*  https://www.senecacollege.ca/about/policies/academic-integrity-policy.html
+* 
+*  Name: Harman Singh Student ID: 121451231 Date: April 7, 2025
+*  Published URL: https://web322-final.vercel.app
+********************************************************************************/
+
 const express = require("express");
 const app = express();
-const projectData = require("./modules/projects");
+const path = require("path");
+const data = require("./modules/projectData.json");
+const sectors = require("./modules/sectorData.json");
 
-// Test route to confirm the server is working
+app.use(express.static("public"));
+app.use(express.json()); // for POST request body parsing
+
+// Helpers
+const addMeta = (resData) => {
+    return {
+        student: "Harman Singh",
+        id: "121451231",
+        timestamp: new Date().toISOString(),
+        data: resData,
+    };
+};
+
+// Home Page
 app.get("/", (req, res) => {
-    res.send("Assignment 2: Harman Singh - 121451231"); 
+    res.sendFile(path.join(__dirname, "/views/home.html"));
 });
 
-// Route to get all projects
+// About Page
+app.get("/about", (req, res) => {
+    res.sendFile(path.join(__dirname, "/views/about.html"));
+});
+
+// All or filtered projects
 app.get("/solutions/projects", (req, res) => {
-    projectData.getAllProjects()
-        .then(projects => {
-            res.json({
-                student_name: "Harman Singh", 
-                student_id: "121451231",    
-                timestamp: new Date(),
-                projects
-            });
-        })
-        .catch(error => {
-            res.status(500).send("Error fetching projects: " + error);
-        });
+    try {
+        const { sector } = req.query;
+        let filtered = data;
+
+        if (sector) {
+            const matchedSector = sectors.find(
+                (s) => s.sector_name.toLowerCase() === sector.toLowerCase()
+            );
+            if (!matchedSector) throw new Error("Sector not found");
+            filtered = data.filter((p) => p.sector_id === matchedSector.id);
+        }
+
+        res.json(addMeta(filtered));
+    } catch (err) {
+        res.status(404).json({ error: err.message });
+    }
 });
 
-// Route to get a project by ID
-app.get("/solutions/projects/id-demo", (req, res) => {
-    projectData.getProjectById(18)  // Replace with a valid project ID
-        .then(project => {
-            res.json({
-                student_name: "Harman Singh", 
-                student_id: "121451231",    
-                timestamp: new Date(),
-                project
-            });
-        })
-        .catch(error => {
-            res.status(404).send("Project not found: " + error);
-        });
+// Project by ID
+app.get("/solutions/projects/:id", (req, res) => {
+    try {
+        const project = data.find(
+            (proj) => proj.id.toString() === req.params.id
+        );
+        if (!project) throw new Error("Project not found");
+        res.json(addMeta(project));
+    } catch (err) {
+        res.status(404).json({ error: err.message });
+    }
 });
 
-// Route to get projects by sector
-app.get("/solutions/projects/sector-demo", (req, res) => {
-    projectData.getProjectsBySector("agriculture")  
-        .then(projects => {
-            res.json({
-                student_name: "Harman Singh", 
-                student_id: "121451231",   
-                timestamp: new Date(),
-                projects
-            });
-        })
-        .catch(error => {
-            res.status(500).send("Error fetching projects by sector: " + error);
-        });
-});
-
-// Initialize projects before starting server
-projectData.initialize()
-    .then(() => {
-        console.log("Initialization successful.");
-        app.listen(3000, () => {
-            console.log("Server is running on port 3000.");
-        });
-    })
-    .catch(error => {
-        console.error("Error initializing data:", error);
+// POST Request handler
+app.post("/post-request", (req, res) => {
+    res.json({
+        student: "Harman Singh",
+        id: "121451231",
+        timestamp: new Date().toISOString(),
+        body: req.body,
     });
+});
+
+// 404 fallback
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, "/views/404.html"));
+});
+
+// Local server (optional for testing)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});

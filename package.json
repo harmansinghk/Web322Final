@@ -1,10 +1,11 @@
 {
-  "name": "asgn3",
+  "name": "Web322Final",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "tw:build": "npx tailwindcss -i ./public/css/tailwind.css -o ./public/css/main.css --watch"
   },
   "keywords": [],
   "author": "",
@@ -14,7 +15,12 @@
     "express.js": "^1.0.0"
   },
   "devDependencies": {
-    "eslint": "^9.19.0"
+    "@tailwindcss/typography": "^0.5.16",
+    "autoprefixer": "^10.4.21",
+    "daisyui": "^5.0.16",
+    "eslint": "^9.24.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17"
   },
   "description": ""
 }

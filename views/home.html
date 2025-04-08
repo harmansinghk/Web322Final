@@ -1,0 +1,86 @@
+<!-- views/home.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Climate Solutions</title>
+  <link href="/css/main.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="navbar bg-base-100">
+    <div class="flex-1">
+      <a class="btn btn-ghost text-xl" href="/">Climate Solutions</a>
+    </div>
+    <div class="flex-none">
+      <ul class="menu menu-horizontal px-1">
+        <li><a href="/about">About</a></li>
+        <li>
+          <details>
+            <summary>Sector</summary>
+            <ul class="p-2 bg-base-100">
+              <li><a href="/solutions/projects?sector=Land Sinks">Land Sinks</a></li>
+              <li><a href="/solutions/projects?sector=Industry">Industry</a></li>
+              <li><a href="/solutions/projects?sector=Transportation">Transportation</a></li>
+              </ul>
+          </details>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="container mx-auto">
+    <div class="hero bg-base-200 my-6 p-6 rounded-lg">
+      <div class="hero-content text-center">
+        <div class="max-w-md">
+          <h1 class="text-5xl font-bold">Explore Climate Solutions Projects</h1>
+          <p class="py-6">Discover innovative ways to reduce carbon emissions and help our planet thrive.</p>
+          <a href="/solutions/projects" class="btn btn-primary">Browse Projects</a>
+          <p class="mt-4">Harman Singh - 121451231</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="card w-full bg-base-100 shadow-xl">
+        <figure>
+          <img src="https://indiancementreview.com/wp-content/uploads/s_2f59db3c8dd4590cbf80cf295ddb6430.webp" alt="Alternative Cement">
+        </figure>
+        <div class="card-body">
+          <h2 class="card-title">Alternative Cement <span class="text-sm font-light">(Industry)</span></h2>
+          <p>New cement formulas can drastically reduce CO2 emissions in construction.</p>
+          <div class="card-actions justify-end">
+            <a href="/solutions/projects/1" class="btn btn-outline">View Project</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card w-full bg-base-100 shadow-xl">
+        <figure>
+          <img src="https://bikebrampton.ca/wp-content/uploads/2024/03/2021-08-buffered-bike-lane-Peter-Robertson-@Dandelion_i.jpg" alt="Bicycle Infrastructure">
+        </figure>
+        <div class="card-body">
+          <h2 class="card-title">Bicycle Infrastructure <span class="text-sm font-light">(Transportation)</span></h2>
+          <p>Building more bike lanes to promote eco-friendly commuting and reduce traffic emissions.</p>
+          <div class="card-actions justify-end">
+            <a href="/solutions/projects/2" class="btn btn-outline">View Project</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card w-full bg-base-100 shadow-xl">
+        <figure>
+          <img src="https://riverfrontnorth.org/wp-content/uploads/2019/02/Riverfront-North-Forest-Restoration-585x585.jpg" alt="Tree Restoration">
+        </figure>
+        <div class="card-body">
+          <h2 class="card-title">Tree Restoration <span class="text-sm font-light">(Land Sinks)</span></h2>
+          <p>Large-scale tree planting and forest restoration to increase carbon absorption capacity.</p>
+          <div class="card-actions justify-end">
+            <a href="/solutions/projects/3" class="btn btn-outline">View Project</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
