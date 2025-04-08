@@ -1,4 +1,3 @@
-<!-- views/home.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,26 +7,7 @@
   <link href="/css/main.css" rel="stylesheet" />
 </head>
 <body>
-  <div class="navbar bg-base-100">
-    <div class="flex-1">
-      <a class="btn btn-ghost text-xl" href="/">Climate Solutions</a>
-    </div>
-    <div class="flex-none">
-      <ul class="menu menu-horizontal px-1">
-        <li><a href="/about">About</a></li>
-        <li>
-          <details>
-            <summary>Sector</summary>
-            <ul class="p-2 bg-base-100">
-              <li><a href="/solutions/projects?sector=Land Sinks">Land Sinks</a></li>
-              <li><a href="/solutions/projects?sector=Industry">Industry</a></li>
-              <li><a href="/solutions/projects?sector=Transportation">Transportation</a></li>
-              </ul>
-          </details>
-        </li>
-      </ul>
-    </div>
-  </div>
+  <%- include('partials/navbar', { page: '/' }) %>
 
   <div class="container mx-auto">
     <div class="hero bg-base-200 my-6 p-6 rounded-lg">
@@ -44,7 +24,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div class="card w-full bg-base-100 shadow-xl">
         <figure>
-          <img src="https://indiancementreview.com/wp-content/uploads/s_2f59db3c8dd4590cbf80cf295ddb6430.webp" alt="Alternative Cement">
+          <img src="https://images.unsplash.com/photo-1607990283144-009a1a1ac810?auto=format&fit=crop&w=600&q=60" alt="Alternative Cement">
         </figure>
         <div class="card-body">
           <h2 class="card-title">Alternative Cement <span class="text-sm font-light">(Industry)</span></h2>
@@ -57,7 +37,7 @@
 
       <div class="card w-full bg-base-100 shadow-xl">
         <figure>
-          <img src="https://bikebrampton.ca/wp-content/uploads/2024/03/2021-08-buffered-bike-lane-Peter-Robertson-@Dandelion_i.jpg" alt="Bicycle Infrastructure">
+          <img src="https://images.unsplash.com/photo-1596484555842-25bcb8443b08?auto=format&fit=crop&w=600&q=60" alt="Bicycle Infrastructure">
         </figure>
         <div class="card-body">
           <h2 class="card-title">Bicycle Infrastructure <span class="text-sm font-light">(Transportation)</span></h2>
@@ -70,7 +50,7 @@
 
       <div class="card w-full bg-base-100 shadow-xl">
         <figure>
-          <img src="https://riverfrontnorth.org/wp-content/uploads/2019/02/Riverfront-North-Forest-Restoration-585x585.jpg" alt="Tree Restoration">
+          <img src="https://images.unsplash.com/photo-1578926375605-eaf7559b1458?auto=format&fit=crop&w=600&q=60" alt="Tree Restoration">
         </figure>
         <div class="card-body">
           <h2 class="card-title">Tree Restoration <span class="text-sm font-light">(Land Sinks)</span></h2>

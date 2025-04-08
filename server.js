@@ -10,69 +10,89 @@
 ********************************************************************************/
 
 const express = require("express");
-const app = express();
 const path = require("path");
-const data = require("./data/projectData.json");
-const sectors = require("./data/sectorData.json");
+const app = express();
+const PORT = process.env.PORT || 8080;
 
+// Middleware
+app.use(express.static("public"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use(express.static(__dirname + '/public'));
-app.use(express.json()); // for POST request body parsing
+// Set EJS view engine
+app.set("view engine", "ejs");
+app.set("views", __dirname + "/views");
 
-// Helpers
-const addMeta = (resData) => {
-    return {
+// Load project data
+const projects = require("./data/projectData.json");
+
+function getAllProjects() {
+    return projects;
+}
+
+function getProjectById(id) {
+    return projects.find((p) => p.id == id);
+}
+
+// Routes
+app.get("/", (req, res) => {
+    res.render("home", { page: "/" });
+});
+
+app.get("/about", (req, res) => {
+    res.render("about", { page: "/about" });
+});
+
+app.get("/solutions/projects", (req, res) => {
+    const sector = req.query.sector;
+    let filtered = getAllProjects();
+
+    if (sector) {
+        filtered = filtered.filter((p) =>
+            p.sector && p.sector.toLowerCase() === sector.toLowerCase()
+        );
+        if (filtered.length === 0) {
+            return res.status(404).render("404", {
+                page: "",
+                message: `No projects found for sector: ${sector}`,
+                student: "Harman Singh",
+                id: "121451231",
+                timestamp: new Date().toISOString(),
+            });
+        }
+    }
+
+    res.render("projects", {
+        page: "/solutions/projects",
+        projects: filtered,
         student: "Harman Singh",
         id: "121451231",
         timestamp: new Date().toISOString(),
-        data: resData,
-    };
-};
-
-// Home Page
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "/views/home.html"));
+    });
 });
 
-// About Page
-app.get("/about", (req, res) => {
-    res.sendFile(path.join(__dirname, "/views/about.html"));
-});
-
-// All or filtered projects
-app.get("/solutions/projects", (req, res) => {
-    try {
-        const { sector } = req.query;
-        let filtered = data;
-
-        if (sector) {
-            const matchedSector = sectors.find(
-                (s) => s.sector_name.toLowerCase() === sector.toLowerCase()
-            );
-            if (!matchedSector) throw new Error("Sector not found");
-            filtered = data.filter((p) => p.sector_id === matchedSector.id);
-        }
-
-        res.json(addMeta(filtered));
-    } catch (err) {
-        res.status(404).json({ error: err.message });
-    }
-});
-
-// Project by ID
 app.get("/solutions/projects/:id", (req, res) => {
-    try {
-        const project = data.find(
-            (proj) => proj.id.toString() === req.params.id
-        );
-        if (!project) throw new Error("Project not found");
-        res.json(addMeta(project));
-    } catch (err) {
-        res.status(404).json({ error: err.message });
+    const project = getProjectById(req.params.id);
+
+    if (!project) {
+        return res.status(404).render("404", {
+            page: "",
+            message: `No project found with ID: ${req.params.id}`,
+            student: "Harman Singh",
+            id: "121451231",
+            timestamp: new Date().toISOString(),
+        });
     }
+
+    res.render("project", {
+        page: "",
+        project,
+        student: "Harman Singh",
+        id: "121451231",
+        timestamp: new Date().toISOString(),
+    });
 });
 
-// POST Request handler
 app.post("/post-request", (req, res) => {
     res.json({
         student: "Harman Singh",
@@ -82,13 +102,16 @@ app.post("/post-request", (req, res) => {
     });
 });
 
-// 404 fallback
+// 404 route (keep last)
 app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, "/views/404.html"));
+    res.status(404).render("404", {
+        page: "",
+        message: "Page not found.",
+        student: "Harman Singh",
+        id: "121451231",
+        timestamp: new Date().toISOString(),
+    });
 });
 
-// Local server (optional for testing)
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+// Start server
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

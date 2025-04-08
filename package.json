@@ -5,12 +5,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "tw:build": "npx tailwindcss -i ./public/css/tailwind.css -o ./public/css/main.css"
+    "tw:build": "npx tailwindcss -i ./public/css/tailwind.css -o ./public/css/main.css",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express.js": "^1.0.0"
   },
@@ -19,6 +21,7 @@
     "autoprefixer": "^10.4.21",
     "daisyui": "^5.0.16",
     "eslint": "^9.24.0",
+    "jest": "^29.7.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17"
   },
