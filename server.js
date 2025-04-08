@@ -12,8 +12,8 @@
 const express = require("express");
 const app = express();
 const path = require("path");
-const data = require("./modules/projectData.json");
-const sectors = require("./modules/sectorData.json");
+const data = require("/modules/projectData.json");
+const sectors = require("/modules/sectorData.json");
 
 app.use(express.static("public"));
 app.use(express.json()); // for POST request body parsing
