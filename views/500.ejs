@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>500 - Server Error</title>
+  <link href="/css/main.css" rel="stylesheet">
+</head>
+<body>
+<%- include("partials/navbar", { page: "" }) %>
+
+<div class="container mx-auto px-4 py-10">
+  <div class="hero bg-base-200 rounded-xl">
+    <div class="hero-content text-center">
+      <div class="max-w-md">
+        <h1 class="text-5xl font-bold text-red-600">500 - Server Error</h1>
+        <p class="py-6">
+          <%= message %>
+        </p>
+        <a href="/" class="btn btn-primary">Return to Home</a>
+      </div>
+    </div>
+  </div>
+</div>
+</html>

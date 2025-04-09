@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add New Project</title>
+  <link href="/css/main.css" rel="stylesheet">
+</head>
+<body>
+  <%- include("partials/navbar", { page: "/solutions/addProject" }) %>
+
+<div class="container mx-auto px-4 py-10">
+  <div class="hero bg-base-200 rounded-xl mb-6">
+    <div class="hero-content text-center">
+      <div class="max-w-md">
+        <h1 class="text-4xl font-bold">Add New Project</h1>
+        <p class="py-4 text-lg">Submit a climate solution project using the form below.</p>
+      </div>
+    </div>
+  </div>
+
+  <form action="/solutions/addProject" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="form-control">
+      <label class="label font-semibold">Project Title</label>
+      <input class="input input-bordered w-full" type="text" name="title" placeholder="Enter project title" required>
+    </div>
+
+    <div class="form-control">
+      <label class="label font-semibold">Feature Image URL</label>
+      <input class="input input-bordered w-full" type="url" name="feature_img_url" placeholder="Paste image URL" required>
+    </div>
+
+    <div class="form-control md:col-span-2">
+      <label class="label font-semibold">Select Sector</label>
+      <select class="select select-bordered w-full" name="sector_id" required>
+        <option disabled selected>Select a sector</option>
+        <% sectors.forEach(sector => { %>
+          <option value="<%= sector.id %>"><%= sector.sector_name %></option>
+        <% }); %>
+      </select>
+    </div>
+
+    <div class="form-control md:col-span-2">
+      <label class="label font-semibold">Short Introduction</label>
+      <textarea class="textarea textarea-bordered w-full" name="intro_short" placeholder="Enter brief introduction" rows="3" required></textarea>
+    </div>
+
+    <div class="form-control md:col-span-2">
+      <label class="label font-semibold">Short Summary</label>
+      <textarea class="textarea textarea-bordered w-full" name="summary_short" placeholder="Enter short summary" rows="3" required></textarea>
+    </div>
+
+    <div class="form-control md:col-span-2">
+      <label class="label font-semibold">Impact</label>
+      <textarea class="textarea textarea-bordered w-full" name="impact" placeholder="Describe the project's impact" rows="3" required></textarea>
+    </div>
+
+    <div class="form-control md:col-span-2">
+      <label class="label font-semibold">Original Source URL</label>
+      <input class="input input-bordered w-full" type="url" name="original_source_url" placeholder="Link to more info" required>
+    </div>
+
+    <div class="form-control md:col-span-2">
+      <button class="btn btn-primary w-full mt-4" type="submit">Submit Project</button>
+    </div>
+  </form>
+</div>
+</body>
+</html>
+
+

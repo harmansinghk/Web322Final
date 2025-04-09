@@ -12,105 +12,144 @@
 const express = require("express");
 const path = require("path");
 const app = express();
-const PORT = process.env.PORT || 8085;
+const PORT = process.env.PORT || 5442;
 
 // Middleware
+app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(__dirname + '/public'));
+
 // Set EJS view engine
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
 
-// Load project data
-const projects = require("./data/projectData.json");
+// Project module
+const projectService = require("./modules/projects");
 
-function getAllProjects() {
-    return projects;
-}
+// Initialize DB
+projectService.initialize().then(() => {
 
-function getProjectById(id) {
-    return projects.find((p) => p.id == id);
-}
+    app.get("/", (req, res) => {
+        res.render("home", { page: "/" });
+    });
 
-// Routes
-app.get("/", (req, res) => {
-    res.render("home", { page: "/" });
-});
+    app.get("/about", (req, res) => {
+        res.render("about", { page: "/about" });
+    });
 
-app.get("/about", (req, res) => {
-    res.render("about", { page: "/about" });
-});
+    app.get("/solutions/projects", async (req, res) => {
+        try {
+            const sector = req.query.sector;
+            const data = sector
+                ? await projectService.getProjectsBySector(sector)
+                : await projectService.getAllProjects();
 
-app.get("/solutions/projects", (req, res) => {
-    const sector = req.query.sector;
-    let filtered = getAllProjects();
-
-    if (sector) {
-        filtered = filtered.filter((p) =>
-            p.sector && p.sector.toLowerCase() === sector.toLowerCase()
-        );
-        if (filtered.length === 0) {
-            return res.status(404).render("404", {
-                page: "",
-                message: `No projects found for sector: ${sector}`,
+            res.render("projects", {
+                page: "/solutions/projects",
+                projects: data,
                 student: "Harman Singh",
                 id: "121451231",
-                timestamp: new Date().toISOString(),
+                timestamp: new Date().toISOString()
+            });
+        } catch (err) {
+            res.status(404).render("404", {
+                page: "",
+                message: err.message,
+                student: "Harman Singh",
+                id: "121451231",
+                timestamp: new Date().toISOString()
             });
         }
-    }
-
-    res.render("projects", {
-        page: "/solutions/projects",
-        projects: filtered,
-        student: "Harman Singh",
-        id: "121451231",
-        timestamp: new Date().toISOString(),
     });
-});
 
-app.get("/solutions/projects/:id", (req, res) => {
-    const project = getProjectById(req.params.id);
+    app.get("/solutions/projects/:id", async (req, res) => {
+        try {
+            const project = await projectService.getProjectById(req.params.id);
+            res.render("project", {
+                page: "",
+                project,
+                student: "Harman Singh",
+                id: "121451231",
+                timestamp: new Date().toISOString()
+            });
+        } catch (err) {
+            res.status(404).render("404", {
+                page: "",
+                message: err.message,
+                student: "Harman Singh",
+                id: "121451231",
+                timestamp: new Date().toISOString()
+            });
+        }
+    });
 
-    if (!project) {
-        return res.status(404).render("404", {
-            page: "",
-            message: `No project found with ID: ${req.params.id}`,
+    app.get("/solutions/addProject", async (req, res) => {
+        try {
+            const sectors = await projectService.getAllSectors();
+            res.render("addProject", { sectors });
+        } catch (err) {
+            res.render("500", { message: err.message });
+        }
+    });
+
+    app.post("/solutions/addProject", async (req, res) => {
+        try {
+            await projectService.addProject(req.body);
+            res.redirect("/solutions/projects");
+        } catch (err) {
+            res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}` });
+        }
+    });
+
+    app.get("/solutions/editProject/:id", async (req, res) => {
+        try {
+            const project = await projectService.getProjectById(req.params.id);
+            const sectors = await projectService.getAllSectors();
+            res.render("editProject", { project, sectors });
+        } catch (err) {
+            res.status(404).render("404", { message: err.message });
+        }
+    });
+
+    app.post("/solutions/editProject", async (req, res) => {
+        try {
+            await projectService.editProject(req.body.id, req.body);
+            res.redirect("/solutions/projects");
+        } catch (err) {
+            res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}` });
+        }
+    });
+
+    app.get("/solutions/deleteProject/:id", async (req, res) => {
+        try {
+            await projectService.deleteProject(req.params.id);
+            res.redirect("/solutions/projects");
+        } catch (err) {
+            res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}` });
+        }
+    });
+
+    app.post("/post-request", (req, res) => {
+        res.json({
             student: "Harman Singh",
             id: "121451231",
             timestamp: new Date().toISOString(),
+            body: req.body
         });
-    }
-
-    res.render("project", {
-        page: "",
-        project,
-        student: "Harman Singh",
-        id: "121451231",
-        timestamp: new Date().toISOString(),
     });
-});
 
-app.post("/post-request", (req, res) => {
-    res.json({
-        student: "Harman Singh",
-        id: "121451231",
-        timestamp: new Date().toISOString(),
-        body: req.body,
+    app.use((req, res) => {
+        res.status(404).render("404", {
+            page: "",
+            message: "Page not found.",
+            student: "Harman Singh",
+            id: "121451231",
+            timestamp: new Date().toISOString()
+        });
     });
-});
 
-// 404 route (keep last)
-app.use((req, res) => {
-    res.status(404).render("404", {
-        page: "",
-        message: "Page not found.",
-        student: "Harman Singh",
-        id: "121451231",
-        timestamp: new Date().toISOString(),
-    });
-});
-
-// Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+}).catch((err) => {
+    console.error("Failed to initialize the database:", err);
+});
