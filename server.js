@@ -17,7 +17,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const authData = require("./modules/auth-service");
-const projectService = require("./projects");
+const projectService = require("./modules/projects");
 
 const app = express();
 const PORT = process.env.PORT || 5442;
