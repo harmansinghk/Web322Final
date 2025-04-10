@@ -58,6 +58,7 @@ module.exports.registerUser = function (userData) {
                     });
             })
             .catch(() => {
+                console.error("bcrypt error:", err);
                 reject("There was an error encrypting the password");
             });
     });
