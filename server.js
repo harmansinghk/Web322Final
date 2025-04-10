@@ -16,7 +16,7 @@ const expressLayouts = require("express-ejs-layouts");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const authData = require("/modules/auth-service");
+const authData = require("./modules/auth-service");
 const projectService = require("./projects");
 
 const app = express();
