@@ -1,5 +1,5 @@
 /********************************************************************************
-*  WEB322 – Assignment 04
+*  WEB322 – Assignment 06 
 * 
 *  I declare that this assignment is my own work in accordance with Seneca's
 *  Academic Integrity Policy:
@@ -11,145 +11,267 @@
 
 const express = require("express");
 const path = require("path");
+const clientSessions = require("client-sessions");
+const expressLayouts = require("express-ejs-layouts");
+
+const authData = require("./modules/auth-service");
+const projectService = require("./modules/projects");
+
 const app = express();
 const PORT = process.env.PORT || 5442;
 
-// Middleware
+// View Engine
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.use(expressLayouts);
+app.set("layout", "layout"); // default layout
+
+// Static & Middleware
 app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Set EJS view engine
-app.set("view engine", "ejs");
-app.set("views", __dirname + "/views");
+app.use(clientSessions({
+    cookieName: "session",
+    secret: "assignment6_secret",
+}));
 
-// Project module
-const projectService = require("./modules/projects");
+app.use((req, res, next) => {
+    res.locals.session = req.session;
+    next();
+});
 
-// Initialize DB
-projectService.initialize().then(() => {
+// Ensure login
+function ensureLogin(req, res, next) {
+    if (!req.session.user) {
+        return res.redirect("/login");
+    }
+    next();
+}
 
-    app.get("/", (req, res) => {
-        res.render("home", { page: "/" });
-    });
+// Routes
+app.get("/", (req, res) => {
+    res.render("home", { page: "/", title: "Home | Climate Solutions" });
+});
 
-    app.get("/about", (req, res) => {
-        res.render("about", { page: "/about" });
-    });
+app.get("/about", (req, res) => {
+    res.render("about", { page: "/about", title: "About | Climate Solutions" });
+});
 
-    app.get("/solutions/projects", async (req, res) => {
-        try {
-            const sector = req.query.sector;
-            const data = sector
-                ? await projectService.getProjectsBySector(sector)
-                : await projectService.getAllProjects();
+app.get("/solutions/projects", async (req, res) => {
+    try {
+        const sector = req.query.sector;
+        const data = sector
+            ? await projectService.getProjectsBySector(sector)
+            : await projectService.getAllProjects();
 
-            res.render("projects", {
-                page: "/solutions/projects",
-                projects: data,
-                student: "Harman Singh",
-                id: "121451231",
-                timestamp: new Date().toISOString()
-            });
-        } catch (err) {
-            res.status(404).render("404", {
-                page: "",
-                message: err.message,
-                student: "Harman Singh",
-                id: "121451231",
-                timestamp: new Date().toISOString()
-            });
-        }
-    });
-
-    app.get("/solutions/projects/:id", async (req, res) => {
-        try {
-            const project = await projectService.getProjectById(req.params.id);
-            res.render("project", {
-                page: "",
-                project,
-                student: "Harman Singh",
-                id: "121451231",
-                timestamp: new Date().toISOString()
-            });
-        } catch (err) {
-            res.status(404).render("404", {
-                page: "",
-                message: err.message,
-                student: "Harman Singh",
-                id: "121451231",
-                timestamp: new Date().toISOString()
-            });
-        }
-    });
-
-    app.get("/solutions/addProject", async (req, res) => {
-        try {
-            const sectors = await projectService.getAllSectors();
-            res.render("addProject", { sectors });
-        } catch (err) {
-            res.render("500", { message: err.message });
-        }
-    });
-
-    app.post("/solutions/addProject", async (req, res) => {
-        try {
-            await projectService.addProject(req.body);
-            res.redirect("/solutions/projects");
-        } catch (err) {
-            res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}` });
-        }
-    });
-
-    app.get("/solutions/editProject/:id", async (req, res) => {
-        try {
-            const project = await projectService.getProjectById(req.params.id);
-            const sectors = await projectService.getAllSectors();
-            res.render("editProject", { project, sectors });
-        } catch (err) {
-            res.status(404).render("404", { message: err.message });
-        }
-    });
-
-    app.post("/solutions/editProject", async (req, res) => {
-        try {
-            await projectService.editProject(req.body.id, req.body);
-            res.redirect("/solutions/projects");
-        } catch (err) {
-            res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}` });
-        }
-    });
-
-    app.get("/solutions/deleteProject/:id", async (req, res) => {
-        try {
-            await projectService.deleteProject(req.params.id);
-            res.redirect("/solutions/projects");
-        } catch (err) {
-            res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}` });
-        }
-    });
-
-    app.post("/post-request", (req, res) => {
-        res.json({
-            student: "Harman Singh",
-            id: "121451231",
-            timestamp: new Date().toISOString(),
-            body: req.body
-        });
-    });
-
-    app.use((req, res) => {
-        res.status(404).render("404", {
-            page: "",
-            message: "Page not found.",
+        res.render("projects", {
+            page: "/solutions/projects",
+            title: "Projects | Climate Solutions",
+            projects: data,
             student: "Harman Singh",
             id: "121451231",
             timestamp: new Date().toISOString()
         });
-    });
-
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-}).catch((err) => {
-    console.error("Failed to initialize the database:", err);
+    } catch (err) {
+        res.status(404).render("404", {
+            page: "",
+            title: "404 | Climate Solutions",
+            message: err.message,
+            student: "Harman Singh",
+            id: "121451231",
+            timestamp: new Date().toISOString()
+        });
+    }
 });
+
+app.get("/solutions/projects/:id", async (req, res) => {
+    try {
+        const project = await projectService.getProjectById(req.params.id);
+        res.render("project", {
+            page: "",
+            title: `${project.title} | Climate Solutions`,
+            project,
+            student: "Harman Singh",
+            id: "121451231",
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        res.status(404).render("404", {
+            page: "",
+            title: "404 | Climate Solutions",
+            message: err.message,
+            student: "Harman Singh",
+            id: "121451231",
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// Add Project
+app.get("/solutions/addProject", ensureLogin, async (req, res) => {
+    try {
+        const sectors = await projectService.getAllSectors();
+        res.render("addProject", {
+            page: "/solutions/addProject",
+            title: "Add Project",
+            sectors
+        });
+    } catch (err) {
+        res.render("500", { message: err.message, title: "500 | Climate Solutions" });
+    }
+});
+
+app.post("/solutions/addProject", ensureLogin, async (req, res) => {
+    try {
+        await projectService.addProject(req.body);
+        res.redirect("/solutions/projects");
+    } catch (err) {
+        res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}`, title: "500 | Climate Solutions" });
+    }
+});
+
+// Edit Project
+app.get("/solutions/editProject/:id", ensureLogin, async (req, res) => {
+    try {
+        const project = await projectService.getProjectById(req.params.id);
+        const sectors = await projectService.getAllSectors();
+        res.render("editProject", {
+            title: `Edit: ${project.title}`,
+            page: "",
+            project,
+            sectors
+        });
+    } catch (err) {
+        res.status(404).render("404", { message: err.message, title: "404 | Climate Solutions" });
+    }
+});
+
+app.post("/solutions/editProject", ensureLogin, async (req, res) => {
+    try {
+        await projectService.editProject(req.body.id, req.body);
+        res.redirect("/solutions/projects");
+    } catch (err) {
+        res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}`, title: "500 | Climate Solutions" });
+    }
+});
+
+// Delete Project
+app.get("/solutions/deleteProject/:id", ensureLogin, async (req, res) => {
+    try {
+        await projectService.deleteProject(req.params.id);
+        res.redirect("/solutions/projects");
+    } catch (err) {
+        res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}`, title: "500 | Climate Solutions" });
+    }
+});
+
+// User History
+app.get("/userHistory", ensureLogin, (req, res) => {
+    res.render("userHistory", { title: "User History | Climate Solutions", page: "/userHistory" });
+});
+
+// Post-request
+app.post("/post-request", (req, res) => {
+    res.json({
+        student: "Harman Singh",
+        id: "121451231",
+        timestamp: new Date().toISOString(),
+        body: req.body
+    });
+});
+
+// LOGIN - GET
+app.get("/login", (req, res) => {
+  res.render("login", {
+    title: "Login | Climate Solutions",
+    page: "/login",
+    errorMessage: "",
+    userName: ""
+  });
+});
+
+// REGISTER - GET
+app.get("/register", (req, res) => {
+  res.render("register", {
+    title: "Register | Climate Solutions",
+    page: "/register",
+    errorMessage: "",
+    successMessage: "",
+    userName: ""
+  });
+});
+
+// REGISTER - POST
+app.post("/register", async (req, res) => {
+  try {
+    await authData.registerUser(req.body);
+    res.render("register", {
+      title: "Register | Climate Solutions",
+      page: "/register",
+      successMessage: "User created",
+      errorMessage: "",
+      userName: ""
+    });
+  } catch (err) {
+    res.render("register", {
+      title: "Register | Climate Solutions",
+      page: "/register",
+      successMessage: "",
+      errorMessage: err,
+      userName: req.body.userName
+    });
+  }
+});
+
+// LOGIN - POST
+app.post("/login", async (req, res) => {
+  req.body.userAgent = req.get("User-Agent");
+
+  try {
+    const user = await authData.checkUser(req.body);
+    req.session.user = {
+      userName: user.userName,
+      email: user.email,
+      loginHistory: user.loginHistory
+    };
+
+    res.redirect("/solutions/projects");
+  } catch (err) {
+    res.render("login", {
+      title: "Login | Climate Solutions",
+      page: "/login",
+      errorMessage: err,
+      userName: req.body.userName
+    });
+  }
+});
+
+// LOGOUT
+app.get("/logout", (req, res) => {
+  req.session.reset();
+  res.redirect("/");
+});
+
+
+// 404
+app.use((req, res) => {
+    res.status(404).render("404", {
+        page: "",
+        title: "404 | Climate Solutions",
+        message: "Page not found.",
+        student: "Harman Singh",
+        id: "121451231",
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Init
+projectService.initialize()
+    .then(authData.initialize)
+    .then(() => {
+        app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    })
+    .catch((err) => {
+        console.error("Unable to start server:", err);
+    });
