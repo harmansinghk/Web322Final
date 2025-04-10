@@ -13,9 +13,11 @@ const express = require("express");
 const path = require("path");
 const clientSessions = require("client-sessions");
 const expressLayouts = require("express-ejs-layouts");
+const dotenv = require("dotenv");
+dotenv.config();
 
-const authData = require("./modules/auth-service");
-const projectService = require("./modules/projects");
+const authData = require("./auth-service");
+const projectService = require("./projects");
 
 const app = express();
 const PORT = process.env.PORT || 5442;
@@ -33,7 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(clientSessions({
     cookieName: "session",
-    secret: "assignment6_secret",
+    secret: process.env.SESSION_SECRET || "assignment6_secret",
 }));
 
 app.use((req, res, next) => {
@@ -108,7 +110,6 @@ app.get("/solutions/projects/:id", async (req, res) => {
     }
 });
 
-// Add Project
 app.get("/solutions/addProject", ensureLogin, async (req, res) => {
     try {
         const sectors = await projectService.getAllSectors();
@@ -131,7 +132,6 @@ app.post("/solutions/addProject", ensureLogin, async (req, res) => {
     }
 });
 
-// Edit Project
 app.get("/solutions/editProject/:id", ensureLogin, async (req, res) => {
     try {
         const project = await projectService.getProjectById(req.params.id);
@@ -156,7 +156,6 @@ app.post("/solutions/editProject", ensureLogin, async (req, res) => {
     }
 });
 
-// Delete Project
 app.get("/solutions/deleteProject/:id", ensureLogin, async (req, res) => {
     try {
         await projectService.deleteProject(req.params.id);
@@ -166,12 +165,10 @@ app.get("/solutions/deleteProject/:id", ensureLogin, async (req, res) => {
     }
 });
 
-// User History
 app.get("/userHistory", ensureLogin, (req, res) => {
     res.render("userHistory", { title: "User History | Climate Solutions", page: "/userHistory" });
 });
 
-// Post-request
 app.post("/post-request", (req, res) => {
     res.json({
         student: "Harman Singh",
@@ -181,80 +178,71 @@ app.post("/post-request", (req, res) => {
     });
 });
 
-// LOGIN - GET
 app.get("/login", (req, res) => {
-  res.render("login", {
-    title: "Login | Climate Solutions",
-    page: "/login",
-    errorMessage: "",
-    userName: ""
-  });
-});
-
-// REGISTER - GET
-app.get("/register", (req, res) => {
-  res.render("register", {
-    title: "Register | Climate Solutions",
-    page: "/register",
-    errorMessage: "",
-    successMessage: "",
-    userName: ""
-  });
-});
-
-// REGISTER - POST
-app.post("/register", async (req, res) => {
-  try {
-    await authData.registerUser(req.body);
-    res.render("register", {
-      title: "Register | Climate Solutions",
-      page: "/register",
-      successMessage: "User created",
-      errorMessage: "",
-      userName: ""
-    });
-  } catch (err) {
-    res.render("register", {
-      title: "Register | Climate Solutions",
-      page: "/register",
-      successMessage: "",
-      errorMessage: err,
-      userName: req.body.userName
-    });
-  }
-});
-
-// LOGIN - POST
-app.post("/login", async (req, res) => {
-  req.body.userAgent = req.get("User-Agent");
-
-  try {
-    const user = await authData.checkUser(req.body);
-    req.session.user = {
-      userName: user.userName,
-      email: user.email,
-      loginHistory: user.loginHistory
-    };
-
-    res.redirect("/solutions/projects");
-  } catch (err) {
     res.render("login", {
-      title: "Login | Climate Solutions",
-      page: "/login",
-      errorMessage: err,
-      userName: req.body.userName
+        title: "Login | Climate Solutions",
+        page: "/login",
+        errorMessage: "",
+        userName: ""
     });
-  }
 });
 
-// LOGOUT
+app.get("/register", (req, res) => {
+    res.render("register", {
+        title: "Register | Climate Solutions",
+        page: "/register",
+        errorMessage: "",
+        successMessage: "",
+        userName: ""
+    });
+});
+
+app.post("/register", async (req, res) => {
+    try {
+        await authData.registerUser(req.body);
+        res.render("register", {
+            title: "Register | Climate Solutions",
+            page: "/register",
+            successMessage: "User created",
+            errorMessage: "",
+            userName: ""
+        });
+    } catch (err) {
+        res.render("register", {
+            title: "Register | Climate Solutions",
+            page: "/register",
+            successMessage: "",
+            errorMessage: err,
+            userName: req.body.userName
+        });
+    }
+});
+
+app.post("/login", async (req, res) => {
+    req.body.userAgent = req.get("User-Agent");
+    try {
+        const user = await authData.checkUser(req.body);
+        req.session.user = {
+            userName: user.userName,
+            email: user.email,
+            loginHistory: user.loginHistory
+        };
+        res.redirect("/solutions/projects");
+    } catch (err) {
+        res.render("login", {
+            title: "Login | Climate Solutions",
+            page: "/login",
+            errorMessage: err,
+            userName: req.body.userName
+        });
+    }
+});
+
 app.get("/logout", (req, res) => {
-  req.session.reset();
-  res.redirect("/");
+    req.session.reset();
+    res.redirect("/");
 });
 
-
-// 404
 app.use((req, res) => {
     res.status(404).render("404", {
         page: "",
@@ -266,12 +254,15 @@ app.use((req, res) => {
     });
 });
 
-// Init
-projectService.initialize()
-    .then(authData.initialize)
-    .then(() => {
-        app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-    })
-    .catch((err) => {
-        console.error("Unable to start server:", err);
-    });
+if (require.main === module) {
+    projectService.initialize()
+        .then(authData.initialize)
+        .then(() => {
+            app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+        })
+        .catch((err) => {
+            console.error("Unable to start server:", err);
+        });
+}
+
+module.exports = app;
